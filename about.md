@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "About"
-description: "my name is Hanson Zhang.On my way to change"
+description: "my name is Dong"
 header-img: "img/green.jpg"
 ---
 
