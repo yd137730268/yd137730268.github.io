@@ -17,9 +17,9 @@ header-img: "img/green.jpg"
 
 # 个人信息
 
-*   D.Y.
+*    Y. D.
 *   本科/科大
 *   技术博客: <http://www.cnblogs.com/yd137730268/> <http://blog.csdn.net/yd137730268>
-*   Github: <https://github.com/yd137730268>
+*    Github: <https://github.com/yd137730268>
 *   目前就职于：Na.
 * * *
