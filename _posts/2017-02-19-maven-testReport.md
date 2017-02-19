@@ -9,6 +9,11 @@ description: maven test report
 ---
 
 单元测试和集成测试报告，javadoc maven配置：
+
+单元测试和集成测试报告，javadoc maven配置：
+
+
+```
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -159,7 +164,7 @@ description: maven test report
 		</plugins>
 	</reporting>
 </project>
-
+```
 
 
 <img src="/assets/image/test.png" alt="替代文本" title="标题文本" width="200" height = "100" />
