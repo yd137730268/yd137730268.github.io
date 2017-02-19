@@ -1,7 +1,7 @@
 ---
 layout: post
 title: unix shell sendmail with attachment
-date: 2017-01-09
+date: 2016-12-01
 categories: blog
 tags: [unix]
 description: unix shell sendmail with attachment
