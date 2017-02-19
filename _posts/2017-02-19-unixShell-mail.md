@@ -8,7 +8,7 @@ description: unix shell sendmail with attachment
 
 ---
 
-
+```
 export MAILPART="$(uuidgen)"
 
 
@@ -46,6 +46,6 @@ Content-Disposition: attachment; filename=ybmonitor.csv
 `base64 ybmonitor.csv`
 --$MAILPART--" | /usr/sbin/sendmail -t
 
-
+```
 <img src="/assets/image/test.png" alt="替代文本" title="标题文本" width="200" height = "100" />
 
