@@ -79,4 +79,22 @@ description: springboot  
 	java -jar target/20170523_springboot-0.0.1-SNAPSHOT.jar
 7. open URL : http://localhost:8080/
 
- 
+8. web container : 
+	//tomcat 
+	//compile('org.springframework.boot:spring-boot-starter-web')
+	//compile 'org.springframework.boot:spring-boot-starter-tomcat'
+	//compile 'org.apache.tomcat.embed:tomcat-embed-jasper'
+	
+	//Jetty
+	//compile ('org.springframework.boot:spring-boot-starter-web') {
+    	//   exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    	//}
+    	compile 'org.springframework.boot:spring-boot-starter-jetty'
+	// !! Only for localhost startup or embed web container, please remove it when you use non-embad jetty server
+	compile 'org.eclipse.jetty:apache-jsp'
+	
+	//Undertow : does not support JSPs.
+	//compile ('org.springframework.boot:spring-boot-starter-web') {
+    	//   exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    	//}
+    	//compile 'org.springframework.boot:spring-boot-starter-undertow:1.5.6.RELEASE'
