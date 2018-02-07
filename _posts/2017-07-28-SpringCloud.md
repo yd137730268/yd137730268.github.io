@@ -41,38 +41,57 @@ description: Spring Cloud
 ### * Admin Server :
 1. gradle dependency:
 ```
-	compile 'de.codecentric:spring-boot-admin-server:1.5.2'
- 	compile 'de.codecentric:spring-boot-admin-server-ui:1.5.2'
- 	compile 'de.codecentric:spring-boot-admin-server-ui-hystrix:1.5.2'
- 	compile 'de.codecentric:spring-boot-admin-server-ui-turbine:1.5.2'
+dependencyManagement {
+     imports {
+           mavenBom 'de.codecentric:spring-boot-admin-server:1.5.2'
+         }
+    }
+dependencies {
+ 	compile 'de.codecentric:spring-boot-admin-server'
+ 	compile 'de.codecentric:spring-boot-admin-server-ui'
+ 	compile 'de.codecentric:spring-boot-admin-server-ui-hystrix'
+ 	compile 'de.codecentric:spring-boot-admin-server-ui-turbine'
+ 	compile 'org.springframework.cloud:spring-cloud-starter-eureka'
  	compile 'org.jolokia:jolokia-core:1.3.6'
+}
 ```
 2. application.yml:
 ```
+#### Common #####
+server.port: 9001
+logging.config: classpath:logback.xml
+management.security.enabled: false
+
+#### Spring Cloud ####
 spring:
-  profiles.active: local
   application.name: CloudCore-AdminServer
   boot.admin.monitor:
     read-timeout: 10000
     connect-timeout: 10000
-    period: 5000
-server.port: 9001
-logging.config: classpath:logback.xml
+    period: 2000
+    
+#### Specific Environment ####
 ---
-spring:
-  profiles: local
+spring.profiles: default
+eureka.client.serviceUrl.defaultZone: http://localhost:9012/eureka/
+---
+spring.profiles: dev
+eureka.client.serviceUrl.defaultZone: http://hnw-cloud-dev.nam.nsroot.net:9011/eureka/
+---
+spring.profiles: uat
+eureka.client.serviceUrl.defaultZone: http://sd-0924-8856:9011/eureka/,http://hnw-cloud-uat4:9011/eureka/
 ``` 
-3. add annotation ```@EnableAdminServer```
+3. add annotation main class :
+```
+@SpringBootApplication
+@Configuration
+@EnableAutoConfiguration
+@EnableAdminServer
+@EnableDiscoveryClient
+@EnableEurekaClient
+```
 ### *  Admin Client :
-1. gradle dependency :
-```
-	compile 'de.codecentric:spring-boot-admin-starter-client:1.5.2'
-```
-2. application.yml:
-```
-spring.boot.admin.url: http://localhost:9001
-management.security.enabled: false
-```
+1. Just register with Eureka server.
 
 ## Spring Cloud Zipkin
 监测请求在Spring Cloud service 调用的一个层次关系和耗时
@@ -99,53 +118,63 @@ spring.sleuth.sampler.percentage: 1.0
 ### * zipkin server:
 1. gradle dependency:
 ```
-	compile("org.springframework.cloud:spring-cloud-starter-eureka")
-	compile("org.springframework.cloud:spring-cloud-starter-eureka-server")
+    compile 'org.springframework.boot:spring-boot-starter-aop'
+    compile("org.springframework.boot:spring-boot-starter-actuator")
+    compile 'org.springframework.cloud:spring-cloud-starter-eureka'
+    compile 'org.springframework.cloud:spring-cloud-starter-eureka-server'
+    compile 'org.springframework.retry:spring-retry'
 ```
 2. application.yml
 ```
-server.port: 8086
-
+server.port: 9012
 spring:
-  profiles:
-    active: local
-  application:
-    name: CloudCore-RegisterServer
-
+  profiles.active: default
+  application.name: CloudCore-RegisterServer
+  
+management.security.enabled: false
+eureka.server.enable-self-preservation: false
 logging.config: classpath:logback.xml
-    
+
+#### Specific Environment ####
 ---
 spring:
-  profiles: local
-  boot.admin.url: http://localhost:9001
-management.security.enabled: false
+  profiles: default
 eureka:
   instance.hostname: localhost
   client:
-    register-with-eureka: false
+    register-with-eureka: true
     fetch-registry: false
-    serviceUrl.defaultZone: http://localhost:8086/eureka/
-    
+    serviceUrl.defaultZone: http://localhost:9011/eureka/
 ---
 spring:
-  profiles: unix1
-  boot.admin.url: http://sd-0924-8856:9001
-management.security.enabled: false
+  profiles: dev
 eureka:
-  instance.hostname: sd-a418-d630
-  client.serviceUrl.defaultZone: http://sd-1d9b-2fd9:8086/eureka/
-
+  instance.hostname: localhost
+  client:
+    register-with-eureka: true
+    fetch-registry: false
+    serviceUrl.defaultZone: http://localhost:9011/eureka/
 ---
 spring:
-  profiles: unix2
-  boot.admin.url: http://sd-0924-8856:9001
-management.security.enabled: false
+  profiles: uat3
 eureka:
-  instance.hostname: sd-1d9b-2fd9
-  client.serviceUrl.defaultZone: http://sd-a418-d630:8086/eureka/
-
+  instance.hostname: sd-0924-8856
+  client:
+    serviceUrl.defaultZone: http://hnw-cloud-uat4:9011/eureka/
+---
+spring:
+  profiles: uat4
+eureka:
+  instance.hostname: hnw-cloud-uat4
+  client:
+    serviceUrl.defaultZone: http://sd-0924-8856:9011/eureka/
 ```
-3. add annotation ```@EnableEurekaServer```
+3. add annotation 
+```
+@EnableEurekaServer
+@SpringBootApplication
+@EnableEurekaClient
+```
 ### * zipkin client:
 1. gradle dependency:
 ```
@@ -272,4 +301,135 @@ hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds: 10000
 ```
 2. add annotation```@EnableFeignClients```
 
-  
+## Spring Cloud Hystrix Dashboard
+处理服务调用容错，超时处理
+### * Hystrix Dashboard:
+1. gradle dependency :
+```
+	compile 'org.springframework.cloud:spring-cloud-starter-task'
+	compile("org.springframework.boot:spring-boot-starter-web")
+	compile 'org.springframework.boot:spring-boot-starter-test'
+	compile 'org.springframework.boot:spring-boot-devtools'
+	
+	compile("org.springframework.cloud:spring-cloud-starter-eureka")
+	compile("org.springframework.boot:spring-boot-starter-actuator")
+	compile("org.springframework.cloud:spring-cloud-starter-config")
+	compile("org.springframework.cloud:spring-cloud-starter-turbine")
+	compile("org.springframework.cloud:spring-cloud-netflix-turbine")
+	compile("org.springframework.cloud:spring-cloud-starter-hystrix-dashboard")
+	compile("org.springframework.cloud:spring-cloud-starter-hystrix")
+```
+2. add annotation : 
+```
+@SpringBootApplication
+@EnableHystrixDashboard
+@EnableTurbine
+```
+3. boostrap.yml:
+```
+server.port: 9051
+
+spring:
+  application.name: CloudCore-HystrixDashboard
+  cloud.config:
+    discovery.enabled: true
+    discovery.serviceId: CloudCore-ConfigServer
+    name: Config-Common
+    
+turbine:
+  appConfig: CloudService-HystrixNode1
+  aggregator.clusterConfig: default
+  clusterNameExpression: new String("default")
+
+#### Specific Environment ####
+---
+spring.profiles: default
+eureka.client.serviceUrl.defaultZone: http://localhost:9011/eureka/
+---
+spring.profiles: dev
+eureka.client.serviceUrl.defaultZone: http://hnw-cloud-dev.nam.nsroot.net:9011/eureka/
+---
+spring.profiles: uat
+eureka.client.serviceUrl.defaultZone: http://sd-0924-8856:9011/eureka/,http://hnw-cloud-uat4:9011/eureka/
+```
+4. dashboard url:
+```
+dashboard Url:
+	http://localhost:8084/hystrix
+
+add stream :
+	http://localhost:8084/turbine.stream
+```
+### * Hystrix Service:
+1. gradle dependency :
+```
+    compile("org.springframework.boot:spring-boot-starter-actuator")
+    compile("org.springframework.cloud:spring-cloud-starter-eureka")
+    compile("org.springframework.cloud:spring-cloud-starter-ribbon")
+    compile("org.springframework.cloud:spring-cloud-starter-feign")
+    compile("org.springframework.cloud:spring-cloud-starter-sleuth")
+    compile("org.springframework.cloud:spring-cloud-sleuth-zipkin")
+    compile("org.springframework.cloud:spring-cloud-starter-config")
+    compile("org.springframework.cloud:spring-cloud-starter-turbine")
+    compile("org.springframework.cloud:spring-cloud-netflix-turbine")
+    compile("org.springframework.cloud:spring-cloud-starter-hystrix-dashboard")
+    compile("org.springframework.cloud:spring-cloud-starter-hystrix")
+```
+2. bootstrap.yml:
+```
+#### Common #####
+server.port: 8085
+management.security.enabled: ${management.security.enabled}
+
+#### Spring Cloud ####
+spring:
+  application.name: CloudService-HystrixNode1
+  cloud.config:
+    discovery.enabled: true
+    discovery.serviceId: CloudCore-ConfigServer
+    name: Config-Common
+
+feign.hystrix.enabled: true
+
+#### Specific Environment ####
+---
+spring.profiles: default
+eureka.client.serviceUrl.defaultZone: http://localhost:9011/eureka/
+---
+spring.profiles: dev
+eureka.client.serviceUrl.defaultZone: http://hnw-cloud-dev.nam.nsroot.net:9011/eureka/
+---
+spring.profiles: uat
+eureka.client.serviceUrl.defaultZone: http://sd-0924-8856:9011/eureka/,http://hnw-cloud-uat4:9011/eureka/
+```
+3. main class :
+```
+@SpringBootApplication
+@Configuration
+@EnableAutoConfiguration
+@EnableDiscoveryClient
+@EnableEurekaClient
+@EnableFeignClients
+@EnableHystrix
+```
+4. feign client with hystrix class MongDBServcieHystrix: 
+```
+@FeignClient(name="CLOUDSERVICE-MONGOSERVICE", fallback = MongDBServcieHystrix.class)
+public interface MongoDBService {
+	@RequestMapping(value = "/mongo/find", method = RequestMethod.GET)
+	public List find(@RequestParam("collection") String collection,
+			@RequestParam("queryJson") String queryJson, @RequestParam("skip") int skip,
+			@RequestParam("limit") int limit) throws Exception;
+}
+```
+```
+@Component
+public class MongDBServcieHystrix implements MongoDBService {
+	private final Log logger = LogFactory.getLog(MongDBServcieHystrix.class);
+
+	@Override
+	public List find(String collection, String queryJson, int skip, int limit)
+			throws Exception {
+			...
+}
+```
